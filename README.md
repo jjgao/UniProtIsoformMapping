@@ -1,1 +1,1 @@
-# gao-UniProtIsoformMapping
+# UniProtIsoformMapping
