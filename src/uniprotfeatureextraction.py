@@ -47,6 +47,7 @@ def parseUniprotXML(xmlstr, out_file):
         gene = getGeneName(entry)
         name = findChildrenByName(entry, "name", True)[0].firstChild.data
         print(gene+" - "+name)
+        length = getLength(entry)
         
         features = findChildrenByName(entry, "feature", False)
         for feature in features:
@@ -78,7 +79,7 @@ def parseUniprotXML(xmlstr, out_file):
             if not begin_pos or not end_pos:
                 continue
 
-            out_file.write('\t'.join([name, gene, f_type, f_desc, begin_pos, end_pos])+'\n')
+            out_file.write('\t'.join([gene, name, length, f_type, f_desc, begin_pos, end_pos])+'\n')
                     
 def getGeneName(entry):
     gene = findChildrenByName(entry, "gene", True)
@@ -94,6 +95,10 @@ def getGeneName(entry):
    
     print "### No primary gene symbol"
     return ""
+
+def getLength(entry):
+    sequence = findChildrenByName(entry, "sequence", True)
+    return sequence[0].getAttribute("length")
 
 def findElementByPath(el, path):
     if not el:
@@ -142,7 +147,7 @@ def main(input_dir, output_dir):
     in_file = open(input_dir, 'r')
     
     out_file = open(output_dir, 'w+')
-
+    
     i = 1
     oneentry = []
     for line in in_file:
