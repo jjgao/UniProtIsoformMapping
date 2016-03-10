@@ -13,7 +13,6 @@ import urllib2
 
 from xml.dom import Node
 from xml.dom import minidom
-from sets import Set
 
 def readUniportAccs(uniprot_url):
     f = urllib2.urlopen(uniprot_url)
@@ -22,12 +21,12 @@ def readUniportAccs(uniprot_url):
 
 def parseUniprotEntry(uniprot_acc, out_file):
     uniprot_xml_url = "http://www.uniprot.org/uniprot/"+uniprot_acc+".xml"
-    u1=urllib2.urlopen(uniprot_xml_url)
-    parseUniprotXML(u1, out_file)
+    xmlstr=urllib2.urlopen(uniprot_xml_url).read()
+    parseUniprotXML(xmlstr, out_file)
     
 
-def parseUniprotXML(entryString, out_file):
-    exludingFeatureTypes = Set([
+def parseUniprotXML(xmlstr, out_file):
+    exludingFeatureTypes = set([
         'sequence variant',
         'mutagenesis site',
         'splice variant',
@@ -41,9 +40,9 @@ def parseUniprotXML(entryString, out_file):
         'disulfide bond',
         'site'
         ])
-    dom=minidom.parseString(entryString)
+    dom=minidom.parseString(xmlstr)
     
-    entries = findElementByPath(dom, "entry")
+    entries = findElementByPath(dom, "uniprot/entry")
     for entry in entries:
         gene = getGeneName(entry)
         name = findChildrenByName(entry, "name", True)[0].firstChild.data
@@ -151,12 +150,13 @@ def main(input_dir, output_dir):
             print(str(i))
             i = i + 1
             oneentry = []
+            oneentry.append('<uniprot>')
         oneentry.append(line)
         if line.startswith('</entry'):
+            oneentry.append('</uniprot>')
             parseUniprotXML(''.join(oneentry), out_file)
 
-    #parseUniprotXML(in_file, out_file)
-    #parseUniprotEntry('MP2K2_HUMAN', out_file)
+#    parseUniprotEntry('MP2K2_HUMAN', out_file)
     
     out_file.close()
     in_file.close()
@@ -165,7 +165,6 @@ def main(input_dir, output_dir):
 
 
 if __name__ == "__main__":
-    #uniprot_url = "http://www.uniprot.org/uniprot/?sort=&desc=&compress=no&query=&fil=organism:%22Homo%20sapiens%20(Human)%20[9606]%22%20AND%20reviewed:yes&format=list&force=yes" #sys.argv[1]
-    input_dir = "/Users/jgao/projects/UniProtPyUtils/uniprot-all-human.xml"#"test_in_file.xml uniprot-all-human.xml
-    output_dir = "/Users/jgao/projects/UniProtPyUtils/uniprot-features.tsv" #sys.argv[2]
+    input_dir = "/Users/jgao/projects/UniProtPyUtils/test_in_file.xml"#"test_in_file.xml uniprot-all-human.xml
+    output_dir = "/Users/jgao/projects/UniProtPyUtils/uniprot-features-test.tsv" #sys.argv[2]
     main(input_dir, output_dir)
